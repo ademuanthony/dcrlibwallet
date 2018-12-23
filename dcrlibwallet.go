@@ -258,6 +258,10 @@ func (lw *LibWallet) InitLoader() {
 	go shutdownListener()
 }
 
+func (lw *LibWallet) WalletExists() (bool, error) {
+	return lw.loader.WalletExists()
+}
+
 func (lw *LibWallet) CreateWallet(passphrase string, seedMnemonic string) error {
 	log.Info("Creating Wallet")
 	if len(seedMnemonic) == 0 {

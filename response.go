@@ -1,6 +1,8 @@
 package dcrlibwallet
 
-import "github.com/raedahgroup/dcrlibwallet/txhelper"
+import (
+	"github.com/raedahgroup/dcrlibwallet/txhelper"
+)
 
 type UnsignedTransaction struct {
 	UnsignedTransaction       []byte
@@ -53,18 +55,19 @@ Direction
 2: Transfered
 */
 type Transaction struct {
-	Hash        string
-	Raw         string
-	Transaction []byte
-	Fee         int64
-	Timestamp   int64
-	Type        string
-	Amount      int64
-	Status      string
-	Height      int32
-	Direction   txhelper.TransactionDirection
-	Debits      []*TransactionDebit
-	Credits     []*TransactionCredit
+	Hash          string
+	Raw           string
+	Transaction   []byte
+	Confirmations int32
+	Fee           int64
+	Timestamp     int64
+	Type          string
+	Amount        int64
+	Status        string
+	BlockHeight   int32
+	Direction     txhelper.TransactionDirection
+	Debits        []*TransactionDebit
+	Credits       []*TransactionCredit
 }
 
 type TransactionDebit struct {

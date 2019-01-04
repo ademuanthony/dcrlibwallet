@@ -732,16 +732,16 @@ func (lw *LibWallet) TransactionNotification(listener TransactionListener) {
 					amount -= int64(transaction.Fee)
 				}
 				tempTransaction := Transaction{
-					Fee:       int64(transaction.Fee),
-					Hash:      transaction.Hash.String(),
-					Raw:       fmt.Sprintf("%02x", transaction.Transaction[:]),
-					Timestamp: transaction.Timestamp,
-					Type:      txhelper.TransactionType(transaction.Type),
-					Credits:   tempCredits,
-					Amount:    amount,
-					Height:    -1,
-					Direction: direction,
-					Debits:    tempDebits}
+					Fee:         int64(transaction.Fee),
+					Hash:        transaction.Hash.String(),
+					Raw:         fmt.Sprintf("%02x", transaction.Transaction[:]),
+					Timestamp:   transaction.Timestamp,
+					Type:        txhelper.TransactionType(transaction.Type),
+					Credits:     tempCredits,
+					Amount:      amount,
+					BlockHeight: -1,
+					Direction:   direction,
+					Debits:      tempDebits}
 				fmt.Println("New Transaction")
 				result, err := json.Marshal(tempTransaction)
 				if err != nil {
@@ -781,7 +781,7 @@ func (lw *LibWallet) GetTransactionRaw(txHash []byte) (*Transaction, error) {
 		return nil, err
 	}
 
-	txSummary, _, blockHash, err := lw.wallet.TransactionSummary(hash)
+	txSummary, confirmations, blockHash, err := lw.wallet.TransactionSummary(hash)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -845,16 +845,17 @@ func (lw *LibWallet) GetTransactionRaw(txHash []byte) (*Transaction, error) {
 	}
 
 	return &Transaction{
-		Fee:       int64(txSummary.Fee),
-		Hash:      txSummary.Hash.String(),
-		Raw:       fmt.Sprintf("%02x", txSummary.Transaction[:]),
-		Timestamp: txSummary.Timestamp,
-		Type:      txhelper.TransactionType(txSummary.Type),
-		Credits:   credits,
-		Amount:    amount,
-		Height:    height,
-		Direction: direction,
-		Debits:    debits,
+		Fee:           int64(txSummary.Fee),
+		Hash:          txSummary.Hash.String(),
+		Raw:           fmt.Sprintf("%02x", txSummary.Transaction[:]),
+		Confirmations: confirmations,
+		Timestamp:     txSummary.Timestamp,
+		Type:          txhelper.TransactionType(txSummary.Type),
+		Credits:       credits,
+		Amount:        amount,
+		BlockHeight:   height,
+		Direction:     direction,
+		Debits:        debits,
 	}, nil
 }
 
@@ -927,16 +928,16 @@ func (lw *LibWallet) GetTransactionsRaw() (transactions []*Transaction, err erro
 				height = int32(block.Header.Height)
 			}
 			tempTransaction := &Transaction{
-				Fee:       int64(transaction.Fee),
-				Hash:      transaction.Hash.String(),
-				Raw:       fmt.Sprintf("%02x", transaction.Transaction[:]),
-				Timestamp: transaction.Timestamp,
-				Type:      txhelper.TransactionType(transaction.Type),
-				Credits:   tempCredits,
-				Amount:    amount,
-				Height:    height,
-				Direction: direction,
-				Debits:    tempDebits}
+				Fee:         int64(transaction.Fee),
+				Hash:        transaction.Hash.String(),
+				Raw:         fmt.Sprintf("%02x", transaction.Transaction[:]),
+				Timestamp:   transaction.Timestamp,
+				Type:        txhelper.TransactionType(transaction.Type),
+				Credits:     tempCredits,
+				Amount:      amount,
+				BlockHeight: height,
+				Direction:   direction,
+				Debits:      tempDebits}
 			transactions = append(transactions, tempTransaction)
 		}
 		select {

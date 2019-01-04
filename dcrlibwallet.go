@@ -699,20 +699,20 @@ func (lw *LibWallet) TransactionNotification(listener TransactionListener) {
 				var amount int64
 				var inputAmounts int64
 				var outputAmounts int64
-				tempCredits := make([]TransactionCredit, len(transaction.MyOutputs))
+				tempCredits := make([]*TransactionCredit, len(transaction.MyOutputs))
 				for index, credit := range transaction.MyOutputs {
 					outputAmounts += int64(credit.Amount)
-					tempCredits[index] = TransactionCredit{
+					tempCredits[index] = &TransactionCredit{
 						Index:    int32(credit.Index),
 						Account:  int32(credit.Account),
 						Internal: credit.Internal,
 						Amount:   int64(credit.Amount),
 						Address:  credit.Address.String()}
 				}
-				tempDebits := make([]TransactionDebit, len(transaction.MyInputs))
+				tempDebits := make([]*TransactionDebit, len(transaction.MyInputs))
 				for index, debit := range transaction.MyInputs {
 					inputAmounts += int64(debit.PreviousAmount)
-					tempDebits[index] = TransactionDebit{
+					tempDebits[index] = &TransactionDebit{
 						Index:           int32(debit.Index),
 						PreviousAccount: int32(debit.PreviousAccount),
 						PreviousAmount:  int64(debit.PreviousAmount),
@@ -741,11 +741,11 @@ func (lw *LibWallet) TransactionNotification(listener TransactionListener) {
 					Raw:       fmt.Sprintf("%02x", transaction.Transaction[:]),
 					Timestamp: transaction.Timestamp,
 					Type:      transactionType(transaction.Type),
-					Credits:   &tempCredits,
+					Credits:   tempCredits,
 					Amount:    amount,
 					Height:    -1,
 					Direction: direction,
-					Debits:    &tempDebits}
+					Debits:    tempDebits}
 				fmt.Println("New Transaction")
 				result, err := json.Marshal(tempTransaction)
 				if err != nil {
@@ -795,10 +795,10 @@ func (lw *LibWallet) GetTransactionRaw(txHash []byte) (*Transaction, error) {
 	var outputTotal int64
 	var amount int64
 
-	credits := make([]TransactionCredit, len(txSummary.MyOutputs))
+	credits := make([]*TransactionCredit, len(txSummary.MyOutputs))
 	for index, credit := range txSummary.MyOutputs {
 		outputTotal += int64(credit.Amount)
-		credits[index] = TransactionCredit{
+		credits[index] = &TransactionCredit{
 			Index:    int32(credit.Index),
 			Account:  int32(credit.Account),
 			Internal: credit.Internal,
@@ -806,10 +806,10 @@ func (lw *LibWallet) GetTransactionRaw(txHash []byte) (*Transaction, error) {
 			Address:  credit.Address.String()}
 	}
 
-	debits := make([]TransactionDebit, len(txSummary.MyInputs))
+	debits := make([]*TransactionDebit, len(txSummary.MyInputs))
 	for index, debit := range txSummary.MyInputs {
 		inputTotal += int64(debit.PreviousAmount)
-		debits[index] = TransactionDebit{
+		debits[index] = &TransactionDebit{
 			Index:           int32(debit.Index),
 			PreviousAccount: int32(debit.PreviousAccount),
 			PreviousAmount:  int64(debit.PreviousAmount),
@@ -854,11 +854,11 @@ func (lw *LibWallet) GetTransactionRaw(txHash []byte) (*Transaction, error) {
 		Raw:       fmt.Sprintf("%02x", txSummary.Transaction[:]),
 		Timestamp: txSummary.Timestamp,
 		Type:      transactionType(txSummary.Type),
-		Credits:   &credits,
+		Credits:   credits,
 		Amount:    amount,
 		Height:    height,
 		Direction: direction,
-		Debits:    &debits,
+		Debits:    debits,
 	}, nil
 }
 
@@ -881,20 +881,20 @@ func (lw *LibWallet) GetTransactionsRaw() (transactions []*Transaction, err erro
 			var inputAmounts int64
 			var outputAmounts int64
 			var amount int64
-			tempCredits := make([]TransactionCredit, len(transaction.MyOutputs))
+			tempCredits := make([]*TransactionCredit, len(transaction.MyOutputs))
 			for index, credit := range transaction.MyOutputs {
 				outputAmounts += int64(credit.Amount)
-				tempCredits[index] = TransactionCredit{
+				tempCredits[index] = &TransactionCredit{
 					Index:    int32(credit.Index),
 					Account:  int32(credit.Account),
 					Internal: credit.Internal,
 					Amount:   int64(credit.Amount),
 					Address:  credit.Address.String()}
 			}
-			tempDebits := make([]TransactionDebit, len(transaction.MyInputs))
+			tempDebits := make([]*TransactionDebit, len(transaction.MyInputs))
 			for index, debit := range transaction.MyInputs {
 				inputAmounts += int64(debit.PreviousAmount)
-				tempDebits[index] = TransactionDebit{
+				tempDebits[index] = &TransactionDebit{
 					Index:           int32(debit.Index),
 					PreviousAccount: int32(debit.PreviousAccount),
 					PreviousAmount:  int64(debit.PreviousAmount),
@@ -936,11 +936,11 @@ func (lw *LibWallet) GetTransactionsRaw() (transactions []*Transaction, err erro
 				Raw:       fmt.Sprintf("%02x", transaction.Transaction[:]),
 				Timestamp: transaction.Timestamp,
 				Type:      transactionType(transaction.Type),
-				Credits:   &tempCredits,
+				Credits:   tempCredits,
 				Amount:    amount,
 				Height:    height,
 				Direction: direction,
-				Debits:    &tempDebits}
+				Debits:    tempDebits}
 			transactions = append(transactions, tempTransaction)
 		}
 		select {

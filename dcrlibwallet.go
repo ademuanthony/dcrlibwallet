@@ -718,19 +718,19 @@ func (lw *LibWallet) TransactionNotification(listener TransactionListener) {
 						PreviousAmount:  int64(debit.PreviousAmount),
 						AccountName:     lw.AccountName(int32(debit.PreviousAccount))}
 				}
-				var direction int32
+				var direction txhelper.TransactionDirection
 				amountDifference := outputAmounts - inputAmounts
 				if amountDifference < 0 && (float64(transaction.Fee) == math.Abs(float64(amountDifference))) {
 					//Transfered
-					direction = 2
+					direction = txhelper.TransactionDirectionTransferred
 					amount = int64(transaction.Fee)
 				} else if amountDifference > 0 {
 					//Received
-					direction = 1
+					direction = txhelper.TransactionDirectionReceived
 					amount = outputAmounts
 				} else {
 					//Sent
-					direction = 0
+					direction = txhelper.TransactionDirectionSent
 					amount = inputAmounts
 					amount -= outputAmounts
 					amount -= int64(transaction.Fee)
@@ -816,20 +816,20 @@ func (lw *LibWallet) GetTransactionRaw(txHash []byte) (*Transaction, error) {
 			AccountName:     lw.AccountName(int32(debit.PreviousAccount))}
 	}
 
-	var direction int32
+	var direction txhelper.TransactionDirection
 	if txSummary.Type == wallet.TransactionTypeRegular {
 		amountDifference := outputTotal - inputTotal
 		if amountDifference < 0 && (float64(txSummary.Fee) == math.Abs(float64(amountDifference))) {
 			//Transfered
-			direction = 2
+			direction = txhelper.TransactionDirectionTransferred
 			amount = int64(txSummary.Fee)
 		} else if amountDifference > 0 {
 			//Received
-			direction = 1
+			direction = txhelper.TransactionDirectionReceived
 			amount = outputTotal
 		} else {
 			//Sent
-			direction = 0
+			direction = txhelper.TransactionDirectionSent
 			amount = inputTotal
 			amount -= outputTotal
 
@@ -901,22 +901,22 @@ func (lw *LibWallet) GetTransactionsRaw() (transactions []*Transaction, err erro
 					AccountName:     lw.AccountName(int32(debit.PreviousAccount))}
 			}
 
-			var direction int32
+			var direction txhelper.TransactionDirection
 			if transaction.Type == wallet.TransactionTypeRegular {
 				amountDifference := outputAmounts - inputAmounts
 				if amountDifference < 0 && (float64(transaction.Fee) == math.Abs(float64(amountDifference))) {
 					//Transfered
-					direction = 2
+					direction = txhelper.TransactionDirectionTransferred
 					amount = int64(transaction.Fee)
 				} else if amountDifference > 0 {
 					//Received
-					direction = 1
+					direction = txhelper.TransactionDirectionReceived
 					for _, credit := range transaction.MyOutputs {
 						amount += int64(credit.Amount)
 					}
 				} else {
 					//Sent
-					direction = 0
+					direction = txhelper.TransactionDirectionSent
 					for _, debit := range transaction.MyInputs {
 						amount += int64(debit.PreviousAmount)
 					}

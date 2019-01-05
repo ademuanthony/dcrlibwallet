@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/decred/dcrd/addrmgr"
-	"github.com/decred/dcrd/chaincfg"
 	"github.com/decred/dcrd/chaincfg/chainhash"
 	"github.com/decred/dcrd/dcrec"
 	"github.com/decred/dcrd/dcrjson"
@@ -37,7 +36,7 @@ import (
 	"github.com/decred/dcrwallet/wallet/txrules"
 	"github.com/decred/dcrwallet/walletseed"
 	"github.com/decred/slog"
-	"github.com/raedahgroup/dcrlibwallet/address"
+	"github.com/raedahgroup/dcrlibwallet/addresshelper"
 	"github.com/raedahgroup/dcrlibwallet/txhelper"
 )
 
@@ -232,18 +231,6 @@ func contextWithShutdownCancel(ctx context.Context) context.Context {
 	return ctx
 }
 
-func decodeAddress(a string, params *chaincfg.Params) (dcrutil.Address, error) {
-	addr, err := dcrutil.DecodeAddress(a)
-	if err != nil {
-		return nil, err
-	}
-	if !addr.IsForNet(params) {
-		return nil, fmt.Errorf("address %v is not intended for use on %v",
-			a, params.Name)
-	}
-	return addr, nil
-}
-
 func (lw *LibWallet) InitLoader() {
 	lw.InitLoaderWithoutShutdownListener()
 	go shutdownListener()
@@ -415,7 +402,7 @@ func (lw *LibWallet) SpvSync(peerAddresses string) error {
 				spvConnect, err := NormalizeAddress(spvConnect[i], lw.activeNet.Params.DefaultPort)
 				if err != nil {
 					for _, syncResponse := range lw.syncResponses {
-						syncResponse.OnSyncError(3, errors.E("SPV Connect address invalid: %v", err))
+						syncResponse.OnSyncError(3, errors.E("SPV Connect addresshelper invalid: %v", err))
 					}
 					return
 				}
@@ -1060,11 +1047,7 @@ func makeTxChangeSource(destAddr string) (*txChangeSource, error) {
 
 func (lw *LibWallet) ConstructTransaction(destAddr string, amount int64, srcAccount int32, requiredConfirmations int32, sendAll bool) (*UnsignedTransaction, error) {
 	// output destination
-	addr, err := dcrutil.DecodeAddress(destAddr)
-	if err != nil {
-		return nil, err
-	}
-	pkScript, err := txscript.PayToAddrScript(addr)
+	pkScript, err := addresshelper.PkScript(destAddr)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -1128,11 +1111,7 @@ func (lw *LibWallet) ConstructTransaction(destAddr string, amount int64, srcAcco
 
 func (lw *LibWallet) SendTransaction(privPass []byte, destAddr string, amount int64, srcAccount int32, requiredConfs int32, sendAll bool) ([]byte, error) {
 	// output destination
-	addr, err := dcrutil.DecodeAddress(destAddr)
-	if err != nil {
-		return nil, err
-	}
-	pkScript, err := txscript.PayToAddrScript(addr)
+	pkScript, err := addresshelper.PkScript(destAddr)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -1369,7 +1348,7 @@ func (lw *LibWallet) RenameAccount(accountNumber int32, newName string) error {
 }
 
 func (lw *LibWallet) HaveAddress(address string) bool {
-	addr, err := decodeAddress(address, lw.wallet.ChainParams())
+	addr, err := addresshelper.DecodeForNetwork(address, lw.wallet.ChainParams())
 	if err != nil {
 		return false
 	}
@@ -1583,7 +1562,7 @@ func (lw *LibWallet) PurchaseTickets(ctx context.Context, request *PurchaseTicke
 
 	var ticketAddr dcrutil.Address
 	if request.TicketAddress != "" {
-		ticketAddr, err = decodeAddress(request.TicketAddress, params)
+		ticketAddr, err = addresshelper.DecodeForNetwork(request.TicketAddress, params)
 		if err != nil {
 			return nil, err
 		}
@@ -1591,7 +1570,7 @@ func (lw *LibWallet) PurchaseTickets(ctx context.Context, request *PurchaseTicke
 
 	var poolAddr dcrutil.Address
 	if request.PoolAddress != "" {
-		poolAddr, err = decodeAddress(request.PoolAddress, params)
+		poolAddr, err = addresshelper.DecodeForNetwork(request.PoolAddress, params)
 		if err != nil {
 			return nil, err
 		}
@@ -1604,11 +1583,11 @@ func (lw *LibWallet) PurchaseTickets(ctx context.Context, request *PurchaseTicke
 	}
 
 	if request.PoolFees > 0 && poolAddr == nil {
-		return nil, errors.New("Pool fees set but no pool address given")
+		return nil, errors.New("Pool fees set but no pool addresshelper given")
 	}
 
 	if request.PoolFees <= 0 && poolAddr != nil {
-		return nil, errors.New("Pool fees negative or unset but pool address given")
+		return nil, errors.New("Pool fees negative or unset but pool addresshelper given")
 	}
 
 	numTickets := int(request.NumTickets)
@@ -1662,7 +1641,7 @@ func (lw *LibWallet) SignMessage(passphrase []byte, address string, message stri
 		return nil, translateError(err)
 	}
 
-	addr, err := decodeAddress(address, lw.wallet.ChainParams())
+	addr, err := addresshelper.DecodeForNetwork(address, lw.wallet.ChainParams())
 	if err != nil {
 		return nil, translateError(err)
 	}

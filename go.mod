@@ -22,7 +22,7 @@ require (
 	github.com/decred/dcrwallet/spv v1.1.0
 	github.com/decred/dcrwallet/ticketbuyer v1.0.1
 	github.com/decred/dcrwallet/ticketbuyer/v2 v2.0.0
-	github.com/decred/dcrwallet/wallet v1.1.0
+	github.com/decred/dcrwallet/wallet v1.1.2
 	github.com/decred/dcrwallet/walletseed v1.0.0
 	github.com/decred/slog v1.0.0
 	github.com/dgraph-io/badger v1.5.4

@@ -834,6 +834,7 @@ func (lw *LibWallet) GetTransactionRaw(txHash []byte) (*Transaction, error) {
 	return &Transaction{
 		Fee:           int64(txSummary.Fee),
 		Hash:          txSummary.Hash.String(),
+		Transaction:   txSummary.Transaction,
 		Raw:           fmt.Sprintf("%02x", txSummary.Transaction[:]),
 		Confirmations: confirmations,
 		Timestamp:     txSummary.Timestamp,
@@ -917,6 +918,7 @@ func (lw *LibWallet) GetTransactionsRaw() (transactions []*Transaction, err erro
 			tempTransaction := &Transaction{
 				Fee:         int64(transaction.Fee),
 				Hash:        transaction.Hash.String(),
+				Transaction: transaction.Transaction,
 				Raw:         fmt.Sprintf("%02x", transaction.Transaction[:]),
 				Timestamp:   transaction.Timestamp,
 				Type:        txhelper.TransactionType(transaction.Type),

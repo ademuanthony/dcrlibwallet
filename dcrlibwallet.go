@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/raedahgroup/dcrlibwallet/util"
 	"math"
 	"net"
 	"os"
@@ -39,6 +38,7 @@ import (
 	"github.com/decred/slog"
 	"github.com/raedahgroup/dcrlibwallet/addresshelper"
 	"github.com/raedahgroup/dcrlibwallet/txhelper"
+	"github.com/raedahgroup/dcrlibwallet/util"
 )
 
 var shutdownRequestChannel = make(chan struct{})
@@ -948,7 +948,7 @@ func (lw *LibWallet) DecodeTransaction(txHash []byte) (string, error) {
 		return "", err
 	}
 
-	tx, err := txhelper.DecodeTransaction(hash, txSummary.Transaction, lw.wallet.ChainParams(), lw.AddressInfo)
+	tx, err := txhelper.DecodeTransaction(hash, txSummary.Transaction, lw.activeNet, lw.AddressInfo)
 	if err != nil {
 		log.Error(err)
 		return "", err
@@ -1334,7 +1334,7 @@ func (lw *LibWallet) RenameAccount(accountNumber int32, newName string) error {
 }
 
 func (lw *LibWallet) HaveAddress(address string) bool {
-	addr, err := addresshelper.DecodeForNetwork(address, lw.wallet.ChainParams())
+	addr, err := addresshelper.DecodeForNetwork(address, lw.activeNet)
 	if err != nil {
 		return false
 	}
@@ -1347,7 +1347,7 @@ func (lw *LibWallet) HaveAddress(address string) bool {
 }
 
 func (lw *LibWallet) IsAddressValid(address string) bool {
-	_, err := addresshelper.DecodeForNetwork(address, lw.wallet.ChainParams())
+	_, err := addresshelper.DecodeForNetwork(address, lw.activeNet)
 	return err == nil
 }
 
@@ -1553,7 +1553,7 @@ func (lw *LibWallet) PurchaseTickets(ctx context.Context, request *PurchaseTicke
 	spendLimit := dcrutil.Amount(ticketPriceResponse.TicketPrice)
 
 	minConf := int32(request.RequiredConfirmations)
-	params := lw.wallet.ChainParams()
+	params := lw.activeNet
 
 	var ticketAddr dcrutil.Address
 	if request.TicketAddress != "" {
@@ -1636,7 +1636,7 @@ func (lw *LibWallet) SignMessage(passphrase []byte, address string, message stri
 		return nil, translateError(err)
 	}
 
-	addr, err := addresshelper.DecodeForNetwork(address, lw.wallet.ChainParams())
+	addr, err := addresshelper.DecodeForNetwork(address, lw.activeNet)
 	if err != nil {
 		return nil, translateError(err)
 	}

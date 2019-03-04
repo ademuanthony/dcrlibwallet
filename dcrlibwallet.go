@@ -74,6 +74,17 @@ func NewLibWallet(homeDir string, dbDriver string, netType string) (*LibWallet, 
 	return lw, nil
 }
 
+func LibWalletFromDb(homeDir string, dbPath string, activeNet *netparams.Params) *LibWallet {
+	errors.Separator = ":: "
+	initLogRotator(filepath.Join(homeDir, "/logs/"+activeNet.Name+"/dcrlibwallet.log"))
+
+	return &LibWallet{
+		dataDir:   dbPath,
+		dbDriver:  DefaultDbDriver,
+		activeNet: activeNet,
+	}
+}
+
 func (lw *LibWallet) SetLogLevel(loglevel string) {
 	_, ok := slog.LevelFromString(loglevel)
 	if ok {
@@ -236,7 +247,7 @@ func (lw *LibWallet) InitLoaderWithoutShutdownListener() {
 		VotingAddress: nil,
 		TicketFee:     10e8,
 	}
-	fmt.Println("Initizing Loader: ", lw.dataDir, "Db: ", lw.dbDriver)
+
 	l := NewLoader(lw.activeNet.Params, lw.dataDir, stakeOptions,
 		20, false, 10e5, wallet.DefaultAccountGapLimit)
 	l.SetDatabaseDriver(lw.dbDriver)
